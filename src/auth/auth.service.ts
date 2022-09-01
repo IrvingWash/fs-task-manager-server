@@ -7,11 +7,6 @@ import { AuthDto } from './dto/auth.dto';
 import { User, UserDocument } from './schemas/user.schema';
 import { Tokens, TokenService } from './token.service';
 
-export interface AuthResult {
-	user: User,
-	tokens: Tokens;
-}
-
 @Injectable()
 export class AuthService {
 	public constructor(
@@ -21,26 +16,23 @@ export class AuthService {
 		private readonly _tokenService: TokenService,
 	) {}
 
-	public async signUp(dto: AuthDto): Promise<AuthResult> {
+	public async signUp(dto: AuthDto): Promise<Tokens> {
 		const { username, password } = dto;
 
 		const hashedPassword = await bcrypt.hash(password, 5);
 
 		const tokens = this._tokenService.generateTokens(username);
 
-		const newUser = await this._userModel.create({
+		await this._userModel.create({
 			username,
 			password: hashedPassword,
 			refreshToken: tokens.refreshToken,
 		});
 
-		return {
-			user: newUser,
-			tokens,
-		};
+		return tokens;
 	}
 
-	public async signIn(dto: AuthDto): Promise<AuthResult> {
+	public async signIn(dto: AuthDto): Promise<Tokens> {
 		const { username, password } = dto;
 
 		const user = await this._userModel.findOne({ username });
@@ -61,9 +53,6 @@ export class AuthService {
 
 		await user.save();
 
-		return {
-			user,
-			tokens,
-		};
+		return tokens;
 	}
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 
 import { EnvConstants } from '../env-constants';
@@ -12,19 +12,19 @@ const secret = process.env[EnvConstants.Secret];
 
 @Injectable()
 export class TokenService {
-	public generateTokens(payload: string): Tokens {
+	public generateTokens(username: string): Tokens {
 		if (secret === undefined) {
 			throw new Error('Secret is not provided');
 		}
 
 		const accessToken = jwt.sign(
-			{ payload },
+			{ username },
 			secret,
 			{ expiresIn: '30m' }
 		);
 
 		const refreshToken = jwt.sign(
-			{ payload },
+			{ username },
 			secret,
 			{ expiresIn: '30d' }
 		);
@@ -33,5 +33,17 @@ export class TokenService {
 			accessToken,
 			refreshToken,
 		};
+	}
+
+	public validateAccessToken(accessToken: string): jwt.JwtPayload {
+		if (secret === undefined) {
+			throw new Error('Secret is not provided');
+		}
+
+		try {
+			return jwt.verify(accessToken, secret) as jwt.JwtPayload;
+		} catch {
+			throw new UnauthorizedException();
+		}
 	}
 }

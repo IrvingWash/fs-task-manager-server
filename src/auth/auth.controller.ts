@@ -4,8 +4,9 @@ import {
 	Post,
 } from '@nestjs/common';
 
-import { AuthResult, AuthService } from './auth.service';
+import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
+import { Tokens } from './token.service';
 
 @Controller('auth')
 export class AuthController {
@@ -17,7 +18,7 @@ export class AuthController {
 	public async signUp(
 		@Body()
 		dto: AuthDto
-	): Promise<AuthResult> {
+	): Promise<Tokens> {
 		return await this._authService.signUp(dto);
 	}
 
@@ -25,7 +26,7 @@ export class AuthController {
 	public async signIn(
 		@Body()
 		dto: AuthDto
-	): Promise<AuthResult> {
+	): Promise<Tokens> {
 		return await this._authService.signIn(dto);
 	}
 }
