@@ -5,18 +5,20 @@ import * as bcrypt from 'bcryptjs';
 
 import { AuthDto } from './dto/auth.dto';
 import { User, UserDocument } from './schemas/user.schema';
+import { Tokens, TokenService } from './token.service';
 
 export interface AuthResult {
 	user: User,
-	accessToken: string;
-	refreshToken: string;
+	tokens: Tokens;
 }
 
 @Injectable()
 export class AuthService {
 	public constructor(
 		@InjectModel(User.name)
-		private readonly _userModel: Model<UserDocument>
+		private readonly _userModel: Model<UserDocument>,
+
+		private readonly _tokenService: TokenService,
 	) {}
 
 	public async signUp(dto: AuthDto): Promise<AuthResult> {
@@ -28,8 +30,7 @@ export class AuthService {
 
 		return {
 			user: newUser,
-			accessToken: 'test',
-			refreshToken: 'test',
+			tokens: this._tokenService.generateTokens(username),
 		};
 	}
 
@@ -50,8 +51,7 @@ export class AuthService {
 
 		return {
 			user,
-			accessToken: 'test',
-			refreshToken: 'test',
+			tokens: this._tokenService.generateTokens(username),
 		};
 	}
 }
