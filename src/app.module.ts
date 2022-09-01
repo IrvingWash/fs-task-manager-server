@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { EnvConstants } from './env-constants';
 import { UserModule } from './user/user.module';
+import { TaskModule } from './task/task.module';
 
 const dbUrl = process.env[EnvConstants.DBURL];
 
@@ -14,6 +15,7 @@ if (dbUrl === undefined) {
 	imports: [
 		MongooseModule.forRoot(dbUrl),
 		UserModule,
+		TaskModule,
 	],
 })
 export class AppModule {}

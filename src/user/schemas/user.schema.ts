@@ -4,7 +4,9 @@ import {
 	SchemaFactory,
 } from '@nestjs/mongoose';
 
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
+
+import { Task } from '../../task/schemas/task.schema';
 
 @Schema()
 export class User {
@@ -13,6 +15,14 @@ export class User {
 
 	@Prop({ required: true })
 	public password: string;
+
+	@Prop({
+		type: [{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'Task',
+		}],
+	})
+	public tasks: Task[];
 }
 
 export type UserDocument = User & Document;

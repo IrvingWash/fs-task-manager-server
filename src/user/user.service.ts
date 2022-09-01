@@ -22,7 +22,7 @@ export class UserService {
 	}
 
 	public async getUserById(id: ObjectId): Promise<User> {
-		const user = await this._userModel.findById(id);
+		const user = await this._userModel.findById(id).populate('tasks');
 
 		if (user === null) {
 			throwUserNotFoundException(id);
