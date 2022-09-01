@@ -26,11 +26,17 @@ export class AuthService {
 
 		const hashedPassword = await bcrypt.hash(password, 5);
 
-		const newUser = await this._userModel.create({ username, password: hashedPassword });
+		const tokens = this._tokenService.generateTokens(username);
+
+		const newUser = await this._userModel.create({
+			username,
+			password: hashedPassword,
+			refreshToken: tokens.refreshToken,
+		});
 
 		return {
 			user: newUser,
-			tokens: this._tokenService.generateTokens(username),
+			tokens,
 		};
 	}
 
@@ -49,9 +55,15 @@ export class AuthService {
 			throw new UnauthorizedException();
 		}
 
+		const tokens = this._tokenService.generateTokens(username);
+
+		user.refreshToken = tokens.refreshToken;
+
+		await user.save();
+
 		return {
 			user,
-			tokens: this._tokenService.generateTokens(username),
+			tokens,
 		};
 	}
 }
