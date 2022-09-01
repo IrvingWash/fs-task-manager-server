@@ -6,8 +6,11 @@ import {
 	Param,
 	Patch,
 	Post,
+	Req,
+	UnauthorizedException,
 } from '@nestjs/common';
 
+import { Request } from 'express';
 import { ObjectId } from 'mongoose';
 
 import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
@@ -20,41 +23,65 @@ export class TaskController {
 		private readonly _taskService: TaskService,
 	) {}
 
-	@Post(':userId')
+	@Post()
 	public async createTask(
-		@Param('userId')
-		userId: ObjectId,
+		@Req()
+		request: Request,
 
 		@Body()
 		dto: CreateTaskDto,
 	): Promise<Task> {
-		return await this._taskService.createTask(userId, dto);
+		const accessToken = this._getAccessToken(request);
+
+		return await this._taskService.createTask(dto, accessToken);
 	}
 
-	@Get(':userId')
+	@Get()
 	public async getAllTasks(
-		@Param('userId')
-		userId: ObjectId
+		@Req()
+		request: Request,
 	): Promise<Task[]> {
-		return await this._taskService.getAllTasks(userId);
+		const accessToken = this._getAccessToken(request);
+
+		return await this._taskService.getAllTasks(accessToken);
 	}
 
 	@Patch(':id')
 	public async updateTask(
+		@Req()
+		request: Request,
+
 		@Param('id')
 		id: ObjectId,
 
 		@Body()
 		dto: UpdateTaskDto
 	): Promise<Task> {
-		return await this._taskService.updateTask(id, dto);
+		const accessToken = this._getAccessToken(request);
+
+		return await this._taskService.updateTask(accessToken, id, dto);
 	}
 
 	@Delete(':id')
 	public async deleteTask(
+		@Req()
+		request: Request,
+
 		@Param('id')
 		id: ObjectId
 	): Promise<Task> {
-		return await this._taskService.deleteTask(id);
+		const accessToken = this._getAccessToken(request);
+
+		return await this._taskService.deleteTask(accessToken, id);
+	}
+
+	private _getAccessToken(request: Request): string {
+		const accessToken = request.headers.authorization?.split(' ')[1];	
+
+		if (accessToken === undefined) {
+			throw new UnauthorizedException();
+		}
+
+		return accessToken;
 	}
 }

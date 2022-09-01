@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { TokenService } from '../auth/token.service';
 import { User, UserSchema } from '../auth/schemas/user.schema';
 import { Task, TaskSchema } from './schemas/task.schema';
 import { TaskController } from './task.controller';
@@ -20,6 +21,6 @@ import { TaskService } from './task.service';
 		]),
 	],
 	controllers: [TaskController],
-	providers: [TaskService],
+	providers: [TaskService, TokenService],
 })
 export class TaskModule {}

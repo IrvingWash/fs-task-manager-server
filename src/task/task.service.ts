@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 
-import { throwUserNotFoundException } from '../auth/exceptions/user.exceptions';
+import { TokenService } from '../auth/token.service';
 import { User, UserDocument } from '../auth/schemas/user.schema';
 import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
 import { throwTaskNotFoundException } from './exceptions/task.exceptions';
@@ -15,17 +15,15 @@ export class TaskService {
 		private readonly _taskModel: Model<TaskDocument>,
 
 		@InjectModel(User.name)
-		private readonly _userModel: Model<UserDocument>
+		private readonly _userModel: Model<UserDocument>,
+
+		private readonly _tokenService: TokenService,
 	) {}
 
-	public async createTask(userId: ObjectId, dto: CreateTaskDto): Promise<Task> {
-		const user = await this._userModel.findById(userId);
+	public async createTask(dto: CreateTaskDto, accessToken: string): Promise<Task> {
+		const user = await this._getUser(accessToken);
 
-		if (user === null) {
-			throwUserNotFoundException(userId);
-		}
-
-		const newTask = await this._taskModel.create({ ...dto, user: userId });
+		const newTask = await this._taskModel.create({ ...dto, user: user._id });
 
 		user.tasks.push(newTask);
 
@@ -34,12 +32,23 @@ export class TaskService {
 		return newTask;
 	}
 
-	public async getAllTasks(userId: ObjectId): Promise<Task[]> {
-		return await this._taskModel.find({ user: userId });
+	public async getAllTasks(accessToken: string): Promise<Task[]> {
+		const user = await this._getUser(accessToken);
+
+		return await this._taskModel.find({ user: user._id });
 	}
 
-	public async updateTask(id: ObjectId, dto: UpdateTaskDto): Promise<Task> {
-		const updatedTask = await this._taskModel.findByIdAndUpdate(id, { ...dto }, { new: true });
+	public async updateTask(accessToken: string, id: ObjectId, dto: UpdateTaskDto): Promise<Task> {
+		const user = await this._getUser(accessToken);
+
+		const updatedTask = await this._taskModel.findOneAndUpdate(
+				{ $and: [
+					{ user: user._id },
+					{ _id: id },
+				] },
+				{ ...dto },
+				{ new: true }
+			);
 
 		if (updatedTask === null) {
 			throwTaskNotFoundException(id);
@@ -48,13 +57,32 @@ export class TaskService {
 		return updatedTask;
 	}
 
-	public async deleteTask(id: ObjectId): Promise<Task> {
-		const deletedTask = await this._taskModel.findByIdAndDelete(id);
+	public async deleteTask(accessToken: string, id: ObjectId): Promise<Task> {
+		const user = await this._getUser(accessToken);
+
+		const deletedTask = await this._taskModel.findOneAndDelete(
+			{ $and: [
+				{ user: user._id },
+				{ _id: id },
+			] }
+		);
 
 		if (deletedTask === null) {
 			throwTaskNotFoundException(id);
 		}
 
 		return deletedTask;
+	}
+
+	private async _getUser(accessToken: string): Promise<UserDocument> {
+		const validationResult = this._tokenService.validateAccessToken(accessToken);
+
+		const user = await this._userModel.findOne({ username: validationResult.username });
+
+		if (user === null) {
+			throw new UnauthorizedException();
+		}
+
+		return user;
 	}
 }
