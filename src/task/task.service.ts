@@ -23,13 +23,7 @@ export class TaskService {
 	public async createTask(dto: CreateTaskDto, accessToken: string): Promise<Task> {
 		const user = await this._getUser(accessToken);
 
-		const newTask = await this._taskModel.create({ ...dto, user: user._id });
-
-		user.tasks.push(newTask);
-
-		await user.save();
-
-		return newTask;
+		return await this._taskModel.create({ ...dto, user: user._id });
 	}
 
 	public async getAllTasks(accessToken: string): Promise<Task[]> {
