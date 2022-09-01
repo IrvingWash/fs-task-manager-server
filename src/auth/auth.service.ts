@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
@@ -28,6 +28,28 @@ export class AuthService {
 
 		return {
 			user: newUser,
+			accessToken: 'test',
+			refreshToken: 'test',
+		};
+	}
+
+	public async signIn(dto: AuthDto): Promise<AuthResult> {
+		const { username, password } = dto;
+
+		const user = await this._userModel.findOne({ username });
+
+		if (user === null) {
+			throw new UnauthorizedException();
+		}
+
+		const isCorrectPassword = bcrypt.compare(password, user.password);
+
+		if (!isCorrectPassword) {
+			throw new UnauthorizedException();
+		}
+
+		return {
+			user,
 			accessToken: 'test',
 			refreshToken: 'test',
 		};

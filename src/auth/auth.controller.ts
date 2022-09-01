@@ -20,4 +20,12 @@ export class AuthController {
 	): Promise<AuthResult> {
 		return await this._authService.signUp(dto);
 	}
+
+	@Post('signin')
+	public async signIn(
+		@Body()
+		dto: AuthDto
+	): Promise<AuthResult> {
+		return await this._authService.signIn(dto);
+	}
 }
