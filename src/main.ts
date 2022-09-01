@@ -15,6 +15,10 @@ async function bootstrap(): Promise<void> {
 		throw new Error('Port is not provided');
 	}
 
+	if (clientUrl === undefined) {
+		throw new Error('Client url is not provided');
+	}
+
 	const logger = new Logger('Core');
 
 	const app = await NestFactory.create(AppModule);
