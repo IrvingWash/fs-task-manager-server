@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { User, UserSchema } from '../user/schemas/user.schema';
+import { User, UserSchema } from '../auth/schemas/user.schema';
 import { Task, TaskSchema } from './schemas/task.schema';
 import { TaskController } from './task.controller';
 import { TaskService } from './task.service';

@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 
-import { throwUserNotFoundException } from '../user/exceptions/user.exceptions';
-import { User, UserDocument } from '../user/schemas/user.schema';
+import { throwUserNotFoundException } from '../auth/exceptions/user.exceptions';
+import { User, UserDocument } from '../auth/schemas/user.schema';
 import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
 import { throwTaskNotFoundException } from './exceptions/task.exceptions';
 import { Task, TaskDocument } from './schemas/task.schema';

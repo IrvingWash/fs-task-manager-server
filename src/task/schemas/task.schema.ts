@@ -6,7 +6,7 @@ import {
 
 import mongoose, { Document } from 'mongoose';
 
-import { User } from '../../user/schemas/user.schema';
+import { User } from '../../auth/schemas/user.schema';
 
 export enum TaskStatus {
 	Open = 'Open',
