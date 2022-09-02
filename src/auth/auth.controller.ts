@@ -11,7 +11,7 @@ import {
 
 import { Request, Response } from 'express';
 
-import { AuthService } from './auth.service';
+import { AuthResult, AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
 import { Tokens } from './token.service';
 
@@ -32,12 +32,12 @@ export class AuthController {
 
 		@Res({ passthrough: true })
 		response: Response
-	): Promise<Tokens> {
+	): Promise<AuthResult> {
 		const signUpResult = await this._authService.signUp(dto);
 
 		response.cookie(
 			'refreshToken',
-			signUpResult.refreshToken,
+			signUpResult.tokens.refreshToken,
 			{
 				maxAge: thirtyDays,
 				httpOnly: true,
@@ -54,12 +54,12 @@ export class AuthController {
 
 		@Res({ passthrough: true })
 		response: Response
-	): Promise<Tokens> {
+	): Promise<AuthResult> {
 		const signInResult = await this._authService.signIn(dto);
 
 		response.cookie(
 			'refreshToken',
-			signInResult.refreshToken,
+			signInResult.tokens.refreshToken,
 			{
 				maxAge: thirtyDays,
 				httpOnly: true,

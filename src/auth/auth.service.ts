@@ -14,6 +14,11 @@ import { AuthDto } from './dto/auth.dto';
 import { User, UserDocument } from './schemas/user.schema';
 import { Tokens, TokenService } from './token.service';
 
+export interface AuthResult {
+	tokens: Tokens;
+	username: string;
+}
+
 @Injectable()
 export class AuthService {
 	private _logger = new Logger(AuthService.name);
@@ -25,7 +30,7 @@ export class AuthService {
 		private readonly _tokenService: TokenService,
 	) {}
 
-	public async signUp(dto: AuthDto): Promise<Tokens> {
+	public async signUp(dto: AuthDto): Promise<AuthResult> {
 		const { username, password } = dto;
 
 		const hashedPassword = await bcrypt.hash(password, 5);
@@ -33,11 +38,17 @@ export class AuthService {
 		const tokens = this._tokenService.generateTokens(username);
 
 		try {
-			await this._userModel.create({
+			const user = await this._userModel.create({
 				username,
 				password: hashedPassword,
 				refreshToken: tokens.refreshToken,
 			});
+
+
+			return {
+				tokens,
+				username: user.username,
+			};
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (error: any) {
 			if (error?.code === 11000) {
@@ -48,11 +59,9 @@ export class AuthService {
 			this._logger.error(error);
 			throw new InternalServerErrorException();
 		}
-
-		return tokens;
 	}
 
-	public async signIn(dto: AuthDto): Promise<Tokens> {
+	public async signIn(dto: AuthDto): Promise<AuthResult> {
 		const { username, password } = dto;
 
 		const user = await this._userModel.findOne({ username });
@@ -75,7 +84,10 @@ export class AuthService {
 
 		await user.save();
 
-		return tokens;
+		return {
+			tokens,
+			username: user.username,
+		};
 	}
 
 	public async refresh(refreshToken: string): Promise<Tokens> {
