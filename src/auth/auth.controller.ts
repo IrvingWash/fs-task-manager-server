@@ -11,7 +11,12 @@ import {
 
 import { Request, Response } from 'express';
 
-import { AuthResult, AuthService } from './auth.service';
+import {
+	AuthResult,
+	AuthService,
+	LogoutResult,
+} from './auth.service';
+
 import { AuthDto } from './dto/auth.dto';
 import { Tokens } from './token.service';
 
@@ -100,15 +105,17 @@ export class AuthController {
 
 		@Res({ passthrough: true })
 		response: Response
-	): Promise<void> {
+	): Promise<LogoutResult> {
 		const accessToken = this._getAccessToken(request);
 
-		this._authService.logout(accessToken);
+		const logoutResult = await this._authService.logout(accessToken);
 
 		response.cookie(
 			'refreshToken',
 			''
 		);
+
+		return logoutResult;
 	}
 
 	private _getRefreshToken(request: Request): string {

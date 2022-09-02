@@ -19,6 +19,10 @@ export interface AuthResult {
 	username: string;
 }
 
+export interface LogoutResult {
+	username: string;
+}
+
 @Injectable()
 export class AuthService {
 	private _logger = new Logger(AuthService.name);
@@ -109,7 +113,7 @@ export class AuthService {
 		return tokens;
 	}
 
-	public async logout(accessToken: string): Promise<void> {
+	public async logout(accessToken: string): Promise<LogoutResult> {
 		const validationResult = this._tokenService.validateAccessToken(accessToken);
 
 		const user = await this._userModel.findOne({ username: validationResult.username });
@@ -122,5 +126,7 @@ export class AuthService {
 		user.refreshToken = '';
 
 		await user.save();
+
+		return { username: user.username };
 	}
 }
