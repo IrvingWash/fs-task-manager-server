@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+	BadRequestException,
+	Injectable,
+	UnauthorizedException,
+} from '@nestjs/common';
+
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
@@ -6,6 +11,7 @@ import * as bcrypt from 'bcryptjs';
 import { AuthDto } from './dto/auth.dto';
 import { User, UserDocument } from './schemas/user.schema';
 import { Tokens, TokenService } from './token.service';
+import { MongoError } from 'mongodb';
 
 @Injectable()
 export class AuthService {
@@ -23,11 +29,17 @@ export class AuthService {
 
 		const tokens = this._tokenService.generateTokens(username);
 
-		await this._userModel.create({
-			username,
-			password: hashedPassword,
-			refreshToken: tokens.refreshToken,
-		});
+		try {
+			await this._userModel.create({
+				username,
+				password: hashedPassword,
+				refreshToken: tokens.refreshToken,
+			});
+		} catch (error: unknown) {
+			if ((error instanceof MongoError) &&  error.code === 11000) {
+				throw new BadRequestException('Duplicate username');
+			}
+		}
 
 		return tokens;
 	}
