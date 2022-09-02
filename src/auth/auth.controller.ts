@@ -52,7 +52,7 @@ export class AuthController {
 		@Res({ passthrough: true })
 		response: Response
 	): Promise<Tokens> {
-		const signInResult = await this._authService.signUp(dto);
+		const signInResult = await this._authService.signIn(dto);
 
 		response.cookie(
 			'refreshToken',
@@ -92,6 +92,8 @@ export class AuthController {
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	private _getRefreshToken(request: Request): string {
+		console.log(request.cookies);
+
 		const refreshToken = request.cookies?.refreshToken as string | undefined;
 
 		if (refreshToken === undefined) {

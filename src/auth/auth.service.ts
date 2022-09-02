@@ -1,6 +1,7 @@
 import {
 	BadRequestException,
 	Injectable,
+	InternalServerErrorException,
 	UnauthorizedException,
 } from '@nestjs/common';
 
@@ -11,7 +12,6 @@ import * as bcrypt from 'bcryptjs';
 import { AuthDto } from './dto/auth.dto';
 import { User, UserDocument } from './schemas/user.schema';
 import { Tokens, TokenService } from './token.service';
-import { MongoError } from 'mongodb';
 
 @Injectable()
 export class AuthService {
@@ -35,10 +35,13 @@ export class AuthService {
 				password: hashedPassword,
 				refreshToken: tokens.refreshToken,
 			});
-		} catch (error: unknown) {
-			if ((error instanceof MongoError) &&  error.code === 11000) {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		} catch (error: any) {
+			if (error?.code === 11000) {
 				throw new BadRequestException('Duplicate username');
 			}
+
+			throw new InternalServerErrorException();
 		}
 
 		return tokens;

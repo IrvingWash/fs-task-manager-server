@@ -3,6 +3,7 @@ config();
 
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
+import * as cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
 import { EnvConstants } from './env-constants';
@@ -26,6 +27,8 @@ async function bootstrap(): Promise<void> {
 	app.enableCors({
 		origin: clientUrl,
 	});
+
+	app.use(cookieParser());
 
 	app.setGlobalPrefix('api');
 
