@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 
@@ -10,6 +10,8 @@ import { Task, TaskDocument } from './schemas/task.schema';
 
 @Injectable()
 export class TaskService {
+	private _logger = new Logger(TaskService.name);
+
 	public constructor(
 		@InjectModel(Task.name)
 		private readonly _taskModel: Model<TaskDocument>,
@@ -45,6 +47,7 @@ export class TaskService {
 			);
 
 		if (updatedTask === null) {
+			this._logger.warn(`Task ${id} not found`);
 			throwTaskNotFoundException(id);
 		}
 
@@ -62,6 +65,7 @@ export class TaskService {
 		);
 
 		if (deletedTask === null) {
+			this._logger.warn(`Task ${id} not found`);
 			throwTaskNotFoundException(id);
 		}
 
@@ -74,6 +78,7 @@ export class TaskService {
 		const user = await this._userModel.findOne({ username: validationResult.username });
 
 		if (user === null) {
+			this._logger.warn('User not found');
 			throw new UnauthorizedException();
 		}
 

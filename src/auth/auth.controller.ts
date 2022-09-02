@@ -6,6 +6,7 @@ import {
 	Req,
 	Res,
 	UnauthorizedException,
+	Logger,
 } from '@nestjs/common';
 
 import { Request, Response } from 'express';
@@ -18,6 +19,8 @@ const thirtyDays = 30 * 24 * 60 * 60 * 1000;
 
 @Controller('auth')
 export class AuthController {
+	private _logger = new Logger(AuthController.name);
+
 	public constructor(
 		private readonly _authService: AuthService
 	) {}
@@ -95,6 +98,7 @@ export class AuthController {
 		const refreshToken = request.cookies?.refreshToken as string | undefined;
 
 		if (refreshToken === undefined) {
+			this._logger.warn('Refresh token is undefined');
 			throw new UnauthorizedException();
 		}
 

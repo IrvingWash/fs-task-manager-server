@@ -2,6 +2,7 @@ import {
 	BadRequestException,
 	Injectable,
 	InternalServerErrorException,
+	Logger,
 	UnauthorizedException,
 } from '@nestjs/common';
 
@@ -15,6 +16,8 @@ import { Tokens, TokenService } from './token.service';
 
 @Injectable()
 export class AuthService {
+	private _logger = new Logger(AuthService.name);
+
 	public constructor(
 		@InjectModel(User.name)
 		private readonly _userModel: Model<UserDocument>,
@@ -38,9 +41,11 @@ export class AuthService {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (error: any) {
 			if (error?.code === 11000) {
+				this._logger.warn(`Username ${username} already exists`);
 				throw new BadRequestException('Duplicate username');
 			}
 
+			this._logger.error(error);
 			throw new InternalServerErrorException();
 		}
 
@@ -53,12 +58,14 @@ export class AuthService {
 		const user = await this._userModel.findOne({ username });
 
 		if (user === null) {
+			this._logger.warn(`User ${username} not found`);
 			throw new UnauthorizedException();
 		}
 
 		const isCorrectPassword = bcrypt.compare(password, user.password);
 
 		if (!isCorrectPassword) {
+			this._logger.error(`Incorrect password for user ${user}`);
 			throw new UnauthorizedException();
 		}
 
@@ -72,15 +79,12 @@ export class AuthService {
 	}
 
 	public async refresh(refreshToken: string): Promise<Tokens> {
-		if (!refreshToken) {
-			throw new UnauthorizedException();
-		}
-
 		const validationResult = this._tokenService.validateRefreshToken(refreshToken);
 
 		const userWithToken = await this._userModel.findOne({ username: validationResult.username });
 
 		if (userWithToken === null) {
+			this._logger.warn(`Refresh token for user not found`);
 			throw new UnauthorizedException();
 		}
 

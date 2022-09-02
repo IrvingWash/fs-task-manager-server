@@ -3,6 +3,7 @@ import {
 	Controller,
 	Delete,
 	Get,
+	Logger,
 	Param,
 	Patch,
 	Post,
@@ -19,6 +20,8 @@ import { TaskService } from './task.service';
 
 @Controller('tasks')
 export class TaskController {
+	private _logger = new Logger(TaskController.name);
+
 	public constructor(
 		private readonly _taskService: TaskService,
 	) {}
@@ -79,6 +82,7 @@ export class TaskController {
 		const accessToken = request.headers.authorization?.split(' ')[1];	
 
 		if (accessToken === undefined) {
+			this._logger.warn('Access token is undefined');
 			throw new UnauthorizedException();
 		}
 
