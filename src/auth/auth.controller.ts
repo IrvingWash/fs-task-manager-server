@@ -92,8 +92,6 @@ export class AuthController {
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	private _getRefreshToken(request: Request): string {
-		console.log(request.cookies);
-
 		const refreshToken = request.cookies?.refreshToken as string | undefined;
 
 		if (refreshToken === undefined) {
