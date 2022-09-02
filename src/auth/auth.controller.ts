@@ -98,7 +98,7 @@ export class AuthController {
 		@Req()
 		request: Request,
 
-		@Res()
+		@Res({ passthrough: true })
 		response: Response
 	): Promise<void> {
 		const accessToken = this._getAccessToken(request);
@@ -111,7 +111,6 @@ export class AuthController {
 		);
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	private _getRefreshToken(request: Request): string {
 		const refreshToken = request.cookies?.refreshToken as string | undefined;
 
