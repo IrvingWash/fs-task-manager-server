@@ -55,4 +55,26 @@ export class AuthService {
 
 		return tokens;
 	}
+
+	public async refresh(refreshToken: string): Promise<Tokens> {
+		if (!refreshToken) {
+			throw new UnauthorizedException();
+		}
+
+		const validationResult = this._tokenService.validateRefreshToken(refreshToken);
+
+		const userWithToken = await this._userModel.findOne({ username: validationResult.username });
+
+		if (userWithToken === null) {
+			throw new UnauthorizedException();
+		}
+
+		const tokens = this._tokenService.generateTokens(userWithToken.username);
+
+		userWithToken.refreshToken = tokens.refreshToken;
+
+		await userWithToken.save();
+
+		return tokens;
+	}
 }

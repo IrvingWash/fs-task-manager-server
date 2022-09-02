@@ -10,7 +10,7 @@ import { Task } from '../../task/schemas/task.schema';
 
 @Schema()
 export class User {
-	@Prop({ required: true })
+	@Prop({ required: true, unique: true })
 	public username: string;
 
 	@Prop({ required: true })

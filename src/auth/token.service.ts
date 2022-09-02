@@ -46,4 +46,16 @@ export class TokenService {
 			throw new UnauthorizedException();
 		}
 	}
+
+	public validateRefreshToken(refreshToken: string): jwt.JwtPayload {
+		if (secret === undefined) {
+			throw new Error('Secret is not provided');
+		}
+
+		try {
+			return jwt.verify(refreshToken, secret) as jwt.JwtPayload;
+		} catch {
+			throw new UnauthorizedException();
+		}
+	}
 }
