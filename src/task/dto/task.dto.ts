@@ -1,5 +1,6 @@
 import {
 	IsEnum,
+	IsNotEmpty,
 	IsOptional,
 	IsString,
 } from 'class-validator';
@@ -8,6 +9,7 @@ import { TaskStatus } from '../schemas/task.schema';
 
 abstract class TaskDtoBase {
 	@IsString()
+	@IsNotEmpty()
 	public readonly title: string;
 
 	@IsString()
