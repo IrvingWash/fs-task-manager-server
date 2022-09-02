@@ -96,4 +96,19 @@ export class AuthService {
 
 		return tokens;
 	}
+
+	public async logout(accessToken: string): Promise<void> {
+		const validationResult = this._tokenService.validateAccessToken(accessToken);
+
+		const user = await this._userModel.findOne({ username: validationResult.username });
+
+		if (user === null) {
+			this._logger.warn('User not found');
+			throw new UnauthorizedException();
+		}
+
+		user.refreshToken = '';
+
+		await user.save();
+	}
 }

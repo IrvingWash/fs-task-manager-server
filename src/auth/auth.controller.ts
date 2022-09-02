@@ -93,6 +93,24 @@ export class AuthController {
 		return refreshResult;
 	}
 
+	@Get('logout')
+	public async logout(
+		@Req()
+		request: Request,
+
+		@Res()
+		response: Response
+	): Promise<void> {
+		const accessToken = this._getAccessToken(request);
+
+		this._authService.logout(accessToken);
+
+		response.cookie(
+			'refreshToken',
+			''
+		);
+	}
+
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	private _getRefreshToken(request: Request): string {
 		const refreshToken = request.cookies?.refreshToken as string | undefined;
@@ -103,5 +121,16 @@ export class AuthController {
 		}
 
 		return refreshToken;
+	}
+
+	private _getAccessToken(request: Request): string {
+		const accessToken = request.headers.authorization?.split(' ')[1];	
+
+		if (accessToken === undefined) {
+			this._logger.warn('Access token is undefined');
+			throw new UnauthorizedException();
+		}
+
+		return accessToken;
 	}
 }
